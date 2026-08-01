@@ -1,3 +1,8 @@
+import json
+
+
+DATA_FILE = "data.json"
+
 EPSILON = 1e-9        # 두 점수 차이가 이보다 작으면 동점으로 본다
 
 CROSS = "Cross"       # 표준 라벨 (십자가)
@@ -60,6 +65,48 @@ def judge(score_a, score_b, label_a, label_b):
     if score_a > score_b:
         return label_a
     return label_b
+
+
+def size_from_key(key):
+    """'size_5' 또는 'size_5_1' 같은 키에서 크기 숫자를 뽑는다. 실패하면 None."""
+    parts = key.split("_")
+    if len(parts) < 2 or not parts[1].isdigit():
+        return None
+    return int(parts[1])
+
+
+def load_data(path):
+    """data.json을 읽어 딕셔너리로 돌려준다. 실패하면 None."""
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except FileNotFoundError:
+        print(f"오류: {path} 파일을 찾을 수 없습니다.")
+    except json.JSONDecodeError:
+        print(f"오류: {path} 내용이 올바른 JSON 형식이 아닙니다.")
+    return None
+
+
+def load_filters(data):
+    """filters를 {크기: {표준라벨: Matrix}} 형태로 바꾼다."""
+    filters = {}
+    for size_key, group in data.get("filters", {}).items():
+        size = size_from_key(size_key)
+        if size is None:
+            print(f"경고: 필터 키 '{size_key}' 형식을 알 수 없어 건너뜁니다.")
+            continue
+
+        table = {}
+        for raw_label, rows in group.items():
+            label = normalize_label(raw_label)
+            if label is None:
+                print(f"경고: 알 수 없는 필터 라벨 '{raw_label}' (건너뜀)")
+                continue
+            table[label] = Matrix(rows)
+
+        filters[size] = table
+        print(f"✓ size_{size} 필터 로드 완료 ({', '.join(sorted(table))})")
+    return filters
 
 
 def parse_row(line, size):
