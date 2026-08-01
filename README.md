@@ -38,11 +38,34 @@ Python 3.8 이상이면 됩니다. 외부 라이브러리는 쓰지 않았고 �
 
 ```
 task3_workstation/
-├── main.py       # 메인 실행 파일
-├── data.json     # 필터와 패턴 데이터 (과제 제공)
+├── main.py         # 메인 실행 파일
+├── data.json       # 필터와 패턴 데이터 (과제 제공)
+├── screenshots/    # 실행 화면 캡처
 ├── .gitignore
 └── README.md
 ```
+
+## 실행 화면
+
+모드 2 (data.json 분석) — 필터 로드와 패턴 판정
+
+![모드2 판정](screenshots/01_json_mode_1.png)
+
+같은 실행의 성능 분석과 결과 요약
+
+![모드2 요약](screenshots/02_json_mode_2.png)
+
+모드 3 (보너스) — 2차원과 1차원 방식 성능 비교
+
+![최적화 비교](screenshots/03_optimization.png)
+
+모드 1 (사용자 입력) — 필터 A, B 입력과 저장 확인
+
+![모드1 입력](screenshots/04_manual_mode_1.png)
+
+같은 실행의 MAC 결과와 판정
+
+![모드1 결과](screenshots/05_manual_mode_2.png)
 
 ## 구현 요약
 
