@@ -47,12 +47,46 @@ class Matrix:
             print(" ".join(str(value) for value in row))
 
 
+class FlatMatrix:
+    """n×n 배열을 1차원 리스트 하나에 펼쳐 담는다. (보너스: 메모리 접근 최적화)"""
+
+    def __init__(self, rows):
+        self.size = len(rows)
+        self.data = []
+        for row in rows:
+            for value in row:
+                self.data.append(value)
+
+    def get(self, row, col):
+        return self.data[row * self.size + col]
+
+    def set(self, row, col, value):
+        self.data[row * self.size + col] = value
+
+    def is_square(self):
+        return self.size > 0 and len(self.data) == self.size * self.size
+
+    def show(self):
+        for row in range(self.size):
+            start = row * self.size
+            line = self.data[start:start + self.size]
+            print(" ".join(str(value) for value in line))
+
+
 def mac(pattern, filter_matrix):
     """MAC 연산: 같은 위치끼리 곱하고(Multiply) 전부 더한다(Accumulate)."""
     score = 0.0
     for row in range(pattern.size):
         for col in range(pattern.size):
             score += pattern.get(row, col) * filter_matrix.get(row, col)
+    return score
+
+
+def mac_flat(pattern, filter_matrix):
+    """1차원 배열을 그대로 훑는 MAC. (보너스: 최적화 버전)"""
+    score = 0.0
+    for i in range(len(pattern.data)):
+        score += pattern.data[i] * filter_matrix.data[i]
     return score
 
 
@@ -246,11 +280,11 @@ def analyze_patterns(data, filters):
     return results
 
 
-def measure_mac(pattern, filter_matrix, repeat=REPEAT):
+def measure_mac(pattern, filter_matrix, repeat=REPEAT, operation=mac):
     """MAC 연산만 repeat번 반복해 1회 평균 시간(ms)을 돌려준다."""
     start = time.perf_counter()
     for _ in range(repeat):
-        mac(pattern, filter_matrix)
+        operation(pattern, filter_matrix)
     elapsed = time.perf_counter() - start
     return elapsed / repeat * 1000
 
@@ -264,6 +298,28 @@ def print_performance(sizes):
         filter_matrix = make_x(size)
         average = measure_mac(pattern, filter_matrix)
         print(f"{str(size) + '×' + str(size):<10}{average:<16.3f}{size * size:<10}")
+
+
+def print_optimization(sizes):
+    """2차원 방식과 1차원 방식의 MAC 성능을 비교해 표로 출력한다. (보너스)"""
+    print(f"{'크기':<9}{'2차원(ms)':<13}{'1차원(ms)':<13}{'속도 향상':<11}{'결과 일치':<10}")
+    print("-" * 56)
+    for size in sizes:
+        pattern = make_cross(size)
+        filter_matrix = make_x(size)
+        flat_pattern = FlatMatrix(pattern.rows)
+        flat_filter = FlatMatrix(filter_matrix.rows)
+
+        before = measure_mac(pattern, filter_matrix)
+        after = measure_mac(flat_pattern, flat_filter, operation=mac_flat)
+
+        score_before = mac(pattern, filter_matrix)
+        score_after = mac_flat(flat_pattern, flat_filter)
+        same = "O" if abs(score_before - score_after) < EPSILON else "X"
+
+        speedup = before / after if after > 0 else 0.0
+        label = str(size) + "×" + str(size)
+        print(f"{label:<9}{before:<13.4f}{after:<13.4f}{speedup:<11.2f}{same:<10}")
 
 
 def print_header(title):
@@ -372,7 +428,8 @@ def show_menu():
     print("[모드 선택]")
     print("1. 사용자 입력 (3x3)")
     print("2. data.json 분석")
-    print("3. 종료")
+    print("3. 최적화 비교 (보너스)")
+    print("4. 종료")
 
 
 def run():
@@ -387,10 +444,13 @@ def run():
             elif choice == "2":
                 run_json_mode()
             elif choice == "3":
+                print_header(f"최적화 비교 (2차원 vs 1차원, 평균/{REPEAT}회)")
+                print_optimization(PERF_SIZES)
+            elif choice == "4":
                 print("프로그램을 종료합니다.")
                 break
             else:
-                print("잘못된 입력입니다. 1~3 사이 숫자를 입력하세요.")
+                print("잘못된 입력입니다. 1~4 사이 숫자를 입력하세요.")
     except (KeyboardInterrupt, EOFError):
         print("\n입력이 중단되었습니다. 프로그램을 종료합니다.")
 
