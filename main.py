@@ -180,6 +180,69 @@ def analyze_patterns(data, filters):
     return results
 
 
+def print_header(title):
+    """구분선이 있는 섹션 제목을 출력한다."""
+    print()
+    print("#" + "-" * 40)
+    print(f"# {title}")
+    print("#" + "-" * 40)
+
+
+def print_case(result):
+    """케이스 하나의 판정 결과를 출력한다."""
+    print(f"--- {result.name} ---")
+
+    if result.cross_score is None:
+        print(f"FAIL ({result.reason})")
+        return
+
+    print(f"Cross 점수: {result.cross_score}")
+    print(f"X 점수: {result.x_score}")
+    line = f"판정: {result.verdict} | expected: {result.expected} | "
+    if result.passed:
+        print(line + "PASS")
+    else:
+        print(line + f"FAIL ({result.reason})")
+
+
+def print_summary(results):
+    """전체 테스트 수, 통과/실패 수, 실패 케이스 목록을 출력한다."""
+    total = len(results)
+    passed = 0
+    for result in results:
+        if result.passed:
+            passed += 1
+    failed = total - passed
+
+    print(f"총 테스트: {total}개")
+    print(f"통과: {passed}개")
+    print(f"실패: {failed}개")
+
+    if failed > 0:
+        print("실패 케이스:")
+        for result in results:
+            if not result.passed:
+                print(f"  - {result.name}: {result.reason}")
+
+
+def run_json_mode():
+    """모드 2: data.json을 읽어 모든 케이스를 판정한다."""
+    data = load_data(DATA_FILE)
+    if data is None:
+        return
+
+    print_header("[1] 필터 로드")
+    filters = load_filters(data)
+
+    print_header("[2] 패턴 분석 (라벨 정규화 적용)")
+    results = analyze_patterns(data, filters)
+    for result in results:
+        print_case(result)
+
+    print_header("[3] 결과 요약")
+    print_summary(results)
+
+
 def parse_row(line, size):
     """한 줄을 숫자 리스트로 바꾼다. 형식이 틀리면 None을 돌려준다."""
     values = line.split()
