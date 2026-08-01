@@ -31,3 +31,36 @@ def mac(pattern, filter_matrix):
         for col in range(pattern.size):
             score += pattern.get(row, col) * filter_matrix.get(row, col)
     return score
+
+
+def parse_row(line, size):
+    """한 줄을 숫자 리스트로 바꾼다. 형식이 틀리면 None을 돌려준다."""
+    values = line.split()
+    if len(values) != size:
+        print(f"입력 형식 오류: 각 줄에 {size}개의 숫자를 공백으로 구분해 입력하세요.")
+        return None
+
+    row = []
+    for value in values:
+        try:
+            row.append(float(value))
+        except ValueError:
+            print(f"입력 형식 오류: '{value}'은(는) 숫자가 아닙니다.")
+            return None
+    return row
+
+
+def ask_matrix(title, size):
+    """size줄을 입력받아 Matrix로 만든다. 형식이 틀리면 처음부터 다시 받는다."""
+    while True:
+        print(f"{title} ({size}줄 입력, 공백 구분)")
+        rows = []
+        for _ in range(size):
+            row = parse_row(input().strip(), size)
+            if row is None:
+                break
+            rows.append(row)
+
+        if len(rows) == size:
+            return Matrix(rows)
+        print("처음부터 다시 입력하세요.\n")
