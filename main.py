@@ -4,6 +4,8 @@ import time
 
 DATA_FILE = "data.json"
 REPEAT = 10           # 성능 측정 반복 횟수
+MANUAL_SIZE = 3       # 모드 1에서 입력받는 크기
+PERF_SIZES = [3, 5, 13, 25]   # 성능 분석 대상 크기
 
 EPSILON = 1e-9        # 두 점수 차이가 이보다 작으면 동점으로 본다
 
@@ -96,6 +98,39 @@ def make_x(size):
                 line.append(0.0)
         rows.append(line)
     return Matrix(rows)
+
+
+def parse_row(line, size):
+    """한 줄을 숫자 리스트로 바꾼다. 형식이 틀리면 None을 돌려준다."""
+    values = line.split()
+    if len(values) != size:
+        print(f"입력 형식 오류: 각 줄에 {size}개의 숫자를 공백으로 구분해 입력하세요.")
+        return None
+
+    row = []
+    for value in values:
+        try:
+            row.append(float(value))
+        except ValueError:
+            print(f"입력 형식 오류: '{value}'은(는) 숫자가 아닙니다.")
+            return None
+    return row
+
+
+def ask_matrix(title, size):
+    """size줄을 입력받아 Matrix로 만든다. 형식이 틀리면 처음부터 다시 받는다."""
+    while True:
+        print(f"{title} ({size}줄 입력, 공백 구분)")
+        rows = []
+        for _ in range(size):
+            row = parse_row(input().strip(), size)
+            if row is None:
+                break
+            rows.append(row)
+
+        if len(rows) == size:
+            return Matrix(rows)
+        print("처음부터 다시 입력하세요.\n")
 
 
 def size_from_key(key):
@@ -276,6 +311,40 @@ def print_summary(results):
                 print(f"  - {result.name}: {result.reason}")
 
 
+def run_manual_mode():
+    """모드 1: 3×3 필터 2개와 패턴을 직접 입력받아 판정한다."""
+    print_header("[1] 필터 입력")
+    filter_a = ask_matrix("필터 A", MANUAL_SIZE)
+    filter_b = ask_matrix("필터 B", MANUAL_SIZE)
+
+    print("\n저장된 필터 A")
+    filter_a.show()
+    print("저장된 필터 B")
+    filter_b.show()
+
+    print_header("[2] 패턴 입력")
+    pattern = ask_matrix("패턴", MANUAL_SIZE)
+    print("\n저장된 패턴")
+    pattern.show()
+
+    print_header("[3] MAC 결과")
+    score_a = mac(pattern, filter_a)
+    score_b = mac(pattern, filter_b)
+    average = measure_mac(pattern, filter_a)
+    verdict = judge(score_a, score_b, "A", "B")
+
+    print(f"A 점수: {score_a}")
+    print(f"B 점수: {score_b}")
+    print(f"연산 시간(평균/{REPEAT}회): {average:.3f} ms")
+    if verdict == UNDECIDED:
+        print(f"판정: 판정 불가 (|A-B| < {EPSILON})")
+    else:
+        print(f"판정: {verdict}")
+
+    print_header("[4] 성능 분석")
+    print_performance([MANUAL_SIZE])
+
+
 def run_json_mode():
     """모드 2: data.json을 읽어 모든 케이스를 판정한다."""
     data = load_data(DATA_FILE)
@@ -290,38 +359,41 @@ def run_json_mode():
     for result in results:
         print_case(result)
 
-    print_header("[3] 결과 요약")
+    print_header(f"[3] 성능 분석 (평균/{REPEAT}회)")
+    print_performance(PERF_SIZES)
+
+    print_header("[4] 결과 요약")
     print_summary(results)
 
 
-def parse_row(line, size):
-    """한 줄을 숫자 리스트로 바꾼다. 형식이 틀리면 None을 돌려준다."""
-    values = line.split()
-    if len(values) != size:
-        print(f"입력 형식 오류: 각 줄에 {size}개의 숫자를 공백으로 구분해 입력하세요.")
-        return None
-
-    row = []
-    for value in values:
-        try:
-            row.append(float(value))
-        except ValueError:
-            print(f"입력 형식 오류: '{value}'은(는) 숫자가 아닙니다.")
-            return None
-    return row
+def show_menu():
+    print()
+    print("=== Mini NPU Simulator ===")
+    print("[모드 선택]")
+    print("1. 사용자 입력 (3x3)")
+    print("2. data.json 분석")
+    print("3. 종료")
 
 
-def ask_matrix(title, size):
-    """size줄을 입력받아 Matrix로 만든다. 형식이 틀리면 처음부터 다시 받는다."""
-    while True:
-        print(f"{title} ({size}줄 입력, 공백 구분)")
-        rows = []
-        for _ in range(size):
-            row = parse_row(input().strip(), size)
-            if row is None:
+def run():
+    """메뉴를 반복하며 모드를 선택받는다."""
+    try:
+        while True:
+            show_menu()
+            choice = input("선택: ").strip()
+
+            if choice == "1":
+                run_manual_mode()
+            elif choice == "2":
+                run_json_mode()
+            elif choice == "3":
+                print("프로그램을 종료합니다.")
                 break
-            rows.append(row)
+            else:
+                print("잘못된 입력입니다. 1~3 사이 숫자를 입력하세요.")
+    except (KeyboardInterrupt, EOFError):
+        print("\n입력이 중단되었습니다. 프로그램을 종료합니다.")
 
-        if len(rows) == size:
-            return Matrix(rows)
-        print("처음부터 다시 입력하세요.\n")
+
+if __name__ == "__main__":
+    run()
