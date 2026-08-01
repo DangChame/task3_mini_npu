@@ -4,6 +4,13 @@ CROSS = "Cross"       # 표준 라벨 (십자가)
 X = "X"               # 표준 라벨 (X)
 UNDECIDED = "UNDECIDED"   # 판정 불가 (동점)
 
+# 파일에 적힌 표기 → 표준 라벨
+LABEL_MAP = {
+    "+": CROSS,
+    "cross": CROSS,
+    "x": X,
+}
+
 
 class Matrix:
     """n×n 2차원 배열(패턴 또는 필터)을 담는 데이터 구조."""
@@ -38,6 +45,12 @@ def mac(pattern, filter_matrix):
         for col in range(pattern.size):
             score += pattern.get(row, col) * filter_matrix.get(row, col)
     return score
+
+
+def normalize_label(raw):
+    """파일에 적힌 라벨 표기를 표준 라벨(Cross/X)로 바꾼다. 모르는 값이면 None."""
+    text = str(raw).strip().lower()
+    return LABEL_MAP.get(text)
 
 
 def judge(score_a, score_b, label_a, label_b):
