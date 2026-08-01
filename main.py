@@ -109,6 +109,77 @@ def load_filters(data):
     return filters
 
 
+class CaseResult:
+    """패턴 케이스 하나의 판정 결과."""
+
+    def __init__(self, name):
+        self.name = name              # 케이스 이름 (예: size_5_1)
+        self.cross_score = None       # Cross 필터 점수
+        self.x_score = None           # X 필터 점수
+        self.verdict = None           # 판정 (Cross / X / UNDECIDED)
+        self.expected = None          # 정답 (정규화된 표준 라벨)
+        self.passed = False           # PASS 여부
+        self.reason = ""              # 실패 사유
+
+
+def analyze_case(key, case, filters):
+    """케이스 하나를 검증하고 판정한다. 문제가 있으면 그 케이스만 실패 처리한다."""
+    result = CaseResult(key)
+
+    size = size_from_key(key)
+    if size is None:
+        result.reason = "키에서 크기를 읽을 수 없음"
+        return result
+
+    if size not in filters:
+        result.reason = f"size_{size} 필터가 없음"
+        return result
+
+    table = filters[size]
+    if CROSS not in table or X not in table:
+        result.reason = f"size_{size} 필터에 Cross/X가 모두 있지 않음"
+        return result
+
+    rows = case.get("input")
+    if rows is None:
+        result.reason = "input 항목이 없음"
+        return result
+
+    pattern = Matrix(rows)
+    if not pattern.is_square():
+        result.reason = "패턴이 정사각형이 아님"
+        return result
+
+    if pattern.size != size:
+        result.reason = f"크기 불일치: 키는 {size}인데 실제 패턴은 {pattern.size}"
+        return result
+
+    result.expected = normalize_label(case.get("expected"))
+    if result.expected is None:
+        result.reason = f"알 수 없는 expected 값: {case.get('expected')}"
+        return result
+
+    result.cross_score = mac(pattern, table[CROSS])
+    result.x_score = mac(pattern, table[X])
+    result.verdict = judge(result.cross_score, result.x_score, CROSS, X)
+    result.passed = result.verdict == result.expected
+
+    if not result.passed:
+        if result.verdict == UNDECIDED:
+            result.reason = "동점(UNDECIDED) 처리 규칙에 따라 FAIL"
+        else:
+            result.reason = f"판정 {result.verdict} != expected {result.expected}"
+    return result
+
+
+def analyze_patterns(data, filters):
+    """모든 패턴 케이스를 판정해 결과 목록을 돌려준다."""
+    results = []
+    for key, case in data.get("patterns", {}).items():
+        results.append(analyze_case(key, case, filters))
+    return results
+
+
 def parse_row(line, size):
     """한 줄을 숫자 리스트로 바꾼다. 형식이 틀리면 None을 돌려준다."""
     values = line.split()
