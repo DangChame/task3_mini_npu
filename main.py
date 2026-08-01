@@ -67,6 +67,35 @@ def judge(score_a, score_b, label_a, label_b):
     return label_b
 
 
+def make_cross(size):
+    """size×size 십자가(Cross) 패턴을 만든다. 가운데 행과 열이 1."""
+    mid = size // 2
+    rows = []
+    for row in range(size):
+        line = []
+        for col in range(size):
+            if row == mid or col == mid:
+                line.append(1.0)
+            else:
+                line.append(0.0)
+        rows.append(line)
+    return Matrix(rows)
+
+
+def make_x(size):
+    """size×size X 패턴을 만든다. 두 대각선이 1."""
+    rows = []
+    for row in range(size):
+        line = []
+        for col in range(size):
+            if row == col or row + col == size - 1:
+                line.append(1.0)
+            else:
+                line.append(0.0)
+        rows.append(line)
+    return Matrix(rows)
+
+
 def size_from_key(key):
     """'size_5' 또는 'size_5_1' 같은 키에서 크기 숫자를 뽑는다. 실패하면 None."""
     parts = key.split("_")
