@@ -1,7 +1,9 @@
 import json
+import time
 
 
 DATA_FILE = "data.json"
+REPEAT = 10           # 성능 측정 반복 횟수
 
 EPSILON = 1e-9        # 두 점수 차이가 이보다 작으면 동점으로 본다
 
@@ -207,6 +209,26 @@ def analyze_patterns(data, filters):
     for key, case in data.get("patterns", {}).items():
         results.append(analyze_case(key, case, filters))
     return results
+
+
+def measure_mac(pattern, filter_matrix, repeat=REPEAT):
+    """MAC 연산만 repeat번 반복해 1회 평균 시간(ms)을 돌려준다."""
+    start = time.perf_counter()
+    for _ in range(repeat):
+        mac(pattern, filter_matrix)
+    elapsed = time.perf_counter() - start
+    return elapsed / repeat * 1000
+
+
+def print_performance(sizes):
+    """크기별 MAC 평균 시간과 연산 횟수(N²)를 표로 출력한다."""
+    print(f"{'크기':<10}{'평균 시간(ms)':<16}{'연산 횟수':<10}")
+    print("-" * 38)
+    for size in sizes:
+        pattern = make_cross(size)
+        filter_matrix = make_x(size)
+        average = measure_mac(pattern, filter_matrix)
+        print(f"{str(size) + '×' + str(size):<10}{average:<16.3f}{size * size:<10}")
 
 
 def print_header(title):
