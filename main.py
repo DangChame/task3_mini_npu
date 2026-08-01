@@ -1,3 +1,10 @@
+EPSILON = 1e-9        # 두 점수 차이가 이보다 작으면 동점으로 본다
+
+CROSS = "Cross"       # 표준 라벨 (십자가)
+X = "X"               # 표준 라벨 (X)
+UNDECIDED = "UNDECIDED"   # 판정 불가 (동점)
+
+
 class Matrix:
     """n×n 2차원 배열(패턴 또는 필터)을 담는 데이터 구조."""
 
@@ -31,6 +38,15 @@ def mac(pattern, filter_matrix):
         for col in range(pattern.size):
             score += pattern.get(row, col) * filter_matrix.get(row, col)
     return score
+
+
+def judge(score_a, score_b, label_a, label_b):
+    """두 점수를 비교해 이긴 쪽 라벨을 돌려준다. 차이가 EPSILON 미만이면 동점."""
+    if abs(score_a - score_b) < EPSILON:
+        return UNDECIDED
+    if score_a > score_b:
+        return label_a
+    return label_b
 
 
 def parse_row(line, size):
