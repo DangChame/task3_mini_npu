@@ -268,7 +268,9 @@ def analyze_case(key, case, filters):
         if result.verdict == UNDECIDED:
             result.reason = "동점(UNDECIDED) 처리 규칙에 따라 FAIL"
         else:
-            result.reason = f"판정 {result.verdict} != expected {result.expected}"
+            result.reason = (
+                f"판정 {result.verdict} != expected {result.expected}"
+            )
     return result
 
 
@@ -297,7 +299,10 @@ def print_performance(sizes):
         pattern = make_cross(size)
         filter_matrix = make_x(size)
         average = measure_mac(pattern, filter_matrix)
-        print(f"{str(size) + '×' + str(size):<10}{average:<16.3f}{size * size:<10}")
+        print(
+            f"{str(size) + '×' + str(size):<10}"
+            f"{average:<16.3f}{size * size:<10}"
+        )
 
 
 def print_optimization(sizes):
@@ -319,7 +324,10 @@ def print_optimization(sizes):
 
         speedup = before / after if after > 0 else 0.0
         label = str(size) + "×" + str(size)
-        print(f"{label:<9}{before:<13.4f}{after:<13.4f}{speedup:<11.2f}{same:<10}")
+        print(
+            f"{label:<9}{before:<13.4f}{after:<13.4f}"
+            f"{speedup:<11.2f}{same:<10}"
+        )
 
 
 def print_header(title):
