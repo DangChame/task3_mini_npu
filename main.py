@@ -31,9 +31,6 @@ class Matrix:
     def get(self, row, col):
         return self.rows[row][col]
 
-    def set(self, row, col, value):
-        self.rows[row][col] = value
-
     def is_square(self):
         if self.size == 0:
             return False
@@ -48,7 +45,12 @@ class Matrix:
 
 
 class FlatMatrix:
-    """n×n 배열을 1차원 리스트 하나에 펼쳐 담는다. (보너스: 메모리 접근 최적화)"""
+    """n×n 배열을 1차원 리스트 하나에 펼쳐 담는다. (보너스: 메모리 접근 최적화)
+
+    Matrix와 달리 data를 감추지 않고 그대로 노출한다. 이 클래스의 목적이
+    접근 비용을 줄이는 것이라, 값을 꺼낼 때마다 메서드를 거치면 의미가 없다.
+    (row, col) 좌표가 필요하면 data[row * size + col]로 찾는다.
+    """
 
     def __init__(self, rows):
         self.size = len(rows)
@@ -56,21 +58,6 @@ class FlatMatrix:
         for row in rows:
             for value in row:
                 self.data.append(value)
-
-    def get(self, row, col):
-        return self.data[row * self.size + col]
-
-    def set(self, row, col, value):
-        self.data[row * self.size + col] = value
-
-    def is_square(self):
-        return self.size > 0 and len(self.data) == self.size * self.size
-
-    def show(self):
-        for row in range(self.size):
-            start = row * self.size
-            line = self.data[start:start + self.size]
-            print(" ".join(str(value) for value in line))
 
 
 def mac(pattern, filter_matrix):
