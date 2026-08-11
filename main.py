@@ -95,33 +95,33 @@ def judge(score_a, score_b, label_a, label_b):
     return label_b
 
 
+def make_empty(size):
+    """전부 0.0으로 채운 size×size 행렬을 만든다."""
+    rows = []
+    for _ in range(size):
+        # 행마다 새 리스트를 만들어야 한다. [[0.0] * size] * size로 쓰면
+        # 같은 리스트를 size번 가리키게 되어 한 칸만 고쳐도 전부 바뀐다.
+        rows.append([0.0] * size)
+    return Matrix(rows)
+
+
 def make_cross(size):
     """size×size 십자가(Cross) 패턴을 만든다. 가운데 행과 열이 1."""
+    matrix = make_empty(size)
     mid = size // 2
-    rows = []
-    for row in range(size):
-        line = []
-        for col in range(size):
-            if row == mid or col == mid:
-                line.append(1.0)
-            else:
-                line.append(0.0)
-        rows.append(line)
-    return Matrix(rows)
+    for i in range(size):
+        matrix.set(mid, i, 1.0)   # 가운데 행 전체
+        matrix.set(i, mid, 1.0)   # 가운데 열 전체
+    return matrix
 
 
 def make_x(size):
     """size×size X 패턴을 만든다. 두 대각선이 1."""
-    rows = []
-    for row in range(size):
-        line = []
-        for col in range(size):
-            if row == col or row + col == size - 1:
-                line.append(1.0)
-            else:
-                line.append(0.0)
-        rows.append(line)
-    return Matrix(rows)
+    matrix = make_empty(size)
+    for i in range(size):
+        matrix.set(i, i, 1.0)              # 왼쪽 위 → 오른쪽 아래
+        matrix.set(i, size - 1 - i, 1.0)   # 오른쪽 위 → 왼쪽 아래
+    return matrix
 
 
 def parse_row(line, size):
