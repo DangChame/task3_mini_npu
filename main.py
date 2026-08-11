@@ -157,6 +157,18 @@ def ask_matrix(title, size):
         print("처음부터 다시 입력하세요.\n")
 
 
+def ask_choice(title, options):
+    """번호 메뉴를 보여주고 올바른 번호를 고를 때까지 다시 받는다."""
+    while True:
+        print(title)
+        for number, text in enumerate(options, 1):
+            print(f"{number}. {text}")
+        answer = input("선택: ").strip()
+        if answer.isdigit() and 1 <= int(answer) <= len(options):
+            return int(answer)
+        print(f"1~{len(options)} 사이 숫자를 입력하세요.\n")
+
+
 def size_from_key(key):
     """'size_5' 또는 'size_5_1' 같은 키에서 크기 숫자를 뽑는다. 실패하면 None."""
     parts = key.split("_")
@@ -283,6 +295,7 @@ def measure_mac(pattern, filter_matrix, repeat=REPEAT, operation=mac):
 
 def print_performance(sizes):
     """크기별 MAC 평균 시간과 연산 횟수(N²)를 표로 출력한다."""
+    print("크기마다 생성기로 십자가(Cross) 패턴과 X 필터를 만들어 측정합니다.")
     print(f"{'크기':<10}{'평균 시간(ms)':<16}{'연산 횟수':<10}")
     print("-" * 38)
     for size in sizes:
@@ -368,8 +381,20 @@ def print_summary(results):
 def run_manual_mode():
     """모드 1: 3×3 필터 2개와 패턴을 직접 입력받아 판정한다."""
     print_header("[1] 필터 입력")
-    filter_a = ask_matrix("필터 A", MANUAL_SIZE)
-    filter_b = ask_matrix("필터 B", MANUAL_SIZE)
+    source = ask_choice(
+        "필터를 어떻게 준비할까요?",
+        ["직접 입력", "자동 생성 (A=십자가, B=X)"],
+    )
+    if source == 2:
+        filter_a = make_cross(MANUAL_SIZE)
+        filter_b = make_x(MANUAL_SIZE)
+        print(
+            f"생성기로 {MANUAL_SIZE}×{MANUAL_SIZE} 십자가(Cross) 필터와 "
+            "X 필터를 만들었습니다."
+        )
+    else:
+        filter_a = ask_matrix("필터 A", MANUAL_SIZE)
+        filter_b = ask_matrix("필터 B", MANUAL_SIZE)
 
     print("\n저장된 필터 A")
     filter_a.show()
