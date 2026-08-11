@@ -31,6 +31,9 @@ class Matrix:
     def get(self, row, col):
         return self.rows[row][col]
 
+    def set(self, row, col, value):
+        self.rows[row][col] = value
+
     def is_square(self):
         if self.size == 0:
             return False
