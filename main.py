@@ -293,29 +293,19 @@ def measure_mac(pattern, filter_matrix, repeat=REPEAT, operation=mac):
     return elapsed / repeat * 1000
 
 
-def print_performance(sizes, data=None):
+def print_performance(sizes):
     """크기별 MAC 평균 시간과 연산 횟수(N²)를 표로 출력한다.
 
-    data는 (패턴, 필터) 짝이다. 주면 그 데이터로 재고(모드 1), 안 주면 크기마다
-    생성기로 만들어 잰다(모드 2). MAC 시간은 값이 아니라 크기에만 좌우되므로
-    어느 쪽이든 같은 크기면 결과는 같다.
-
-    패턴과 필터를 따로 받지 않는 이유는 둘이 항상 짝으로 다녀야 하기 때문이다.
-    매개변수를 둘로 나누면 한쪽만 넘기는 상태가 만들어지는데, 그러면 넘긴 값이
-    조용히 무시되거나 None을 계산하려다 죽는다. 하나로 묶으면 그럴 수 없다.
+    크기마다 생성기로 데이터를 만들어 잰다. MAC 시간은 값이 아니라 크기에만
+    좌우되므로 어떤 값이 들어 있든 결과는 같다.
     """
-    if data is None:
-        print("크기마다 생성기로 십자가(Cross) 패턴과 X 필터를 만들어 측정합니다.")
-    else:
-        print("위에서 준비한 패턴과 필터 A로 측정합니다.")
+    print("크기마다 생성기로 십자가(Cross) 패턴과 X 필터를 만들어 측정합니다.")
     print(f"{'크기':<10}{'평균 시간(ms)':<16}{'연산 횟수':<10}")
     print("-" * 38)
     for size in sizes:
-        if data is None:
-            target, other = make_cross(size), make_x(size)
-        else:
-            target, other = data
-        average = measure_mac(target, other)
+        pattern = make_cross(size)
+        filter_matrix = make_x(size)
+        average = measure_mac(pattern, filter_matrix)
         print(
             f"{str(size) + '×' + str(size):<10}"
             f"{average:<16.3f}{size * size:<10}"
@@ -433,9 +423,6 @@ def run_manual_mode():
         print(f"판정: 판정 불가 (|A-B| < {EPSILON})")
     else:
         print(f"판정: {verdict}")
-
-    print_header("[4] 성능 분석")
-    print_performance([MANUAL_SIZE], (pattern, filter_a))
 
 
 def run_json_mode():
