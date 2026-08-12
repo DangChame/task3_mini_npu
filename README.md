@@ -64,9 +64,17 @@ task3_workstation/
 
 ![모드1 입력](screenshots/04_manual_mode_1.png)
 
-같은 실행의 MAC 결과와 판정
+같은 실행의 패턴 입력과 MAC 결과
 
 ![모드1 결과](screenshots/05_manual_mode_2.png)
+
+모드 1에서 필터를 **생성기로 자동 생성**한 경우 (보너스 재활용)
+
+![모드1 자동생성](screenshots/06_manual_generated_1.png)
+
+같은 실행의 MAC 결과 — 십자가 필터(A)가 이겨서 판정이 A로 나옵니다
+
+![모드1 자동생성 결과](screenshots/07_manual_generated_2.png)
 
 ## 구현 요약
 
