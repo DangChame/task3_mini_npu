@@ -293,15 +293,25 @@ def measure_mac(pattern, filter_matrix, repeat=REPEAT, operation=mac):
     return elapsed / repeat * 1000
 
 
-def print_performance(sizes):
-    """크기별 MAC 평균 시간과 연산 횟수(N²)를 표로 출력한다."""
-    print("크기마다 생성기로 십자가(Cross) 패턴과 X 필터를 만들어 측정합니다.")
+def print_performance(sizes, pattern=None, filter_matrix=None):
+    """크기별 MAC 평균 시간과 연산 횟수(N²)를 표로 출력한다.
+
+    pattern과 filter_matrix를 주면 그 데이터로 잰다(모드 1). 안 주면 크기마다
+    생성기로 만들어 잰다(모드 2). MAC 시간은 값이 아니라 크기에만 좌우되므로
+    어느 쪽이든 같은 크기면 결과는 같다.
+    """
+    if pattern is None:
+        print("크기마다 생성기로 십자가(Cross) 패턴과 X 필터를 만들어 측정합니다.")
+    else:
+        print("위에서 준비한 패턴과 필터 A로 측정합니다.")
     print(f"{'크기':<10}{'평균 시간(ms)':<16}{'연산 횟수':<10}")
     print("-" * 38)
     for size in sizes:
-        pattern = make_cross(size)
-        filter_matrix = make_x(size)
-        average = measure_mac(pattern, filter_matrix)
+        if pattern is None:
+            target, other = make_cross(size), make_x(size)
+        else:
+            target, other = pattern, filter_matrix
+        average = measure_mac(target, other)
         print(
             f"{str(size) + '×' + str(size):<10}"
             f"{average:<16.3f}{size * size:<10}"
@@ -421,7 +431,7 @@ def run_manual_mode():
         print(f"판정: {verdict}")
 
     print_header("[4] 성능 분석")
-    print_performance([MANUAL_SIZE])
+    print_performance([MANUAL_SIZE], pattern, filter_a)
 
 
 def run_json_mode():
